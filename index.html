@@ -67,9 +67,9 @@ input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 <section class="card">
 <h2>Property Information</h2>
 <div class="body grid">
-<div class="field"><label>Property Name</label><input id="property"></div>
+<div class="field"><label>Property Name</label><select id="property" onchange="propertySelected(this.value)"><option value="">Select Property</option></select></div>
 <div class="field"><label>Inspection Date</label><input id="date" type="date"></div>
-<div class="field"><label>Property Address</label><input id="address"></div>
+<div class="field"><label>Property Address</label><input id="address" readonly placeholder="Automatically fills when property is selected"></div>
 <div class="field"><label>Technician / Conducted By</label><select id="tech"><option value="">Select Technician</option><option>Chris Howard</option><option>Philip Cyphers</option><option>Craig Cerny</option><option>Sarah Anello</option><option>Jarrod Bray</option><option>Lane Greenbank</option></select></div>
 <div class="field"><label>Property Contact</label><input id="contact"></div>
 <div class="field"><label>Units Inspected</label><input id="units"></div>
@@ -113,7 +113,7 @@ input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 </section>
 
 <section class="card">
-<h2>5. Vacant Unit Turn / Ready-to-Rent</h2><div class="body"><div id="turn"></div></div>
+<h2>5. Vacant Unit Turn</h2><div class="body"><div id="turn"></div></div>
 </section>
 
 <!-- ADDED FROM PROPERTY INSPECTION REPORT -->
@@ -144,7 +144,8 @@ input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 <div class="body">
 <div class="small">Move-out checklist based on the Commercial Property Move-Out Walkthrough Checklist you provided. Complete the property/tenant details and document damage, excessive wear, missing items, cleaning, alterations, and recommended chargebacks.</div>
 <div class="grid" style="margin-top:10px">
-<div class="field"><label>Move-Out Property Name</label><input id="moveProperty"></div>
+<div class="field"><label>Move-Out Property Name</label><select id="moveProperty" onchange="propertySelected(this.value)"><option value="">Select Property</option></select></div>
+<div class="field"><label>Move-Out Property Address</label><input id="moveAddress" readonly placeholder="Automatically fills when property is selected"></div>
 <div class="field"><label>Suite #</label><input id="moveSuite"></div>
 <div class="field"><label>Tenant / Business Name</label><input id="moveTenant"></div>
 <div class="field"><label>Move-Out Walkthrough Date</label><input id="moveDate" type="date"></div>
@@ -188,6 +189,57 @@ input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 </div>
 
 <script>
+const propertyDirectory = {
+"46th Street Medical LLC":"14020 N 46th Street, Tampa, FL 33613-2813",
+"Altamonte / SSG Inc.":"1032-1098 Montgomery Road, Altamonte Springs, FL 32714",
+"Big Bend Medical Park LLC - Association":"13123-13145 Kings Lake Drive, Gibsonton, FL 33534",
+"Big Bend Medical Park, LLC - Operating":"13145 Kings Lake Drive, 6-101, 6-102, Gibsonton, FL 33534",
+"Brandon Mall General Partnership":"903-1101 W. Brandon Blvd., Brandon, FL 33511",
+"Bruce B. Downs Professional Center Condominium Association":"12206 Bruce B. Downs Blvd, Tampa, FL 33612",
+"Bruce B. Downs Professional Center LLC":"12210 Bruce B. Downs Blvd, Tampa, FL 33612",
+"Clearwater Storage LLC":"1861 N Highland Ave., Clearwater, FL 33755",
+"Fishhawk Office Park LLC - Operating":"16627-16641 Fishhawk Blvd., Lithia, FL 33547",
+"Fishhawk Professional Center Owner's Association, Inc.":"5454-5486 Lithia Pinecrest Road, Lithia, FL 33547",
+"Fishhawk Storage LLC":"16617 Fishhawk Blvd., Lithia, FL 33547",
+"Florida Bearss Associates LLC":"202-238 E. Bearss Ave. (110 E Bearss o/p), Tampa, FL 33613",
+"Golding United Fishhawk LLC":"16707 - 16769 Fishhawk Blvd., Lithia, FL 33547",
+"Howard & A LLC":"202, 204, 206 N. Howard Ave.; 2303 West N. A. St., Tampa, FL 33606",
+"Howard & Main, LLC":"1702, 1704 N. Howard Ave., Tampa, FL 33607",
+"Interbay Commons LLC":"6301 - 6302 Interbay Commons Way, Tampa, FL 33611",
+"Lake St. Charles Medical Center LLC":"10522-10548 Lake St. Charles Blvd., Riverview, FL 33578",
+"Oakley Center LLC":"27814 Grove Isle Drive, Wesley Chapel, FL 33544",
+"Park Boulevard Shopping Center LTD":"7400-7700 49th Street N, Pinellas Park, FL 33781",
+"RSVP Fishhawk LLC - Operating":"5454-5486 Lithia Pinecrest Road, Lithia, FL 33547",
+"RSVP Hyde Park LLC":"2111 W Swann Ave., Tampa, FL 33606",
+"Scher Investments, LLC":"204 N Howard Ave, Tampa, FL 33606",
+"Shoppes at 54 LLC":"7643-7657 SR 54 (54 & Cita Lane), New Port Richey, FL 34653-6217",
+"Shoppes at Osprey Fishhawk LLC":"15258-15282 Fishhawk Blvd, Lithia, FL 33547",
+"Skipper 42 LLC":"14530 N 42nd Street, Tampa, FL 33613-2813",
+"Sunset Square General Partnership":"1861-1895 N. Highland Ave.; 1521-1527 Sunset Point Road, Clearwater, FL 33755",
+"Superior Lodge LLC":"204 N Howard Ave., Tampa, FL 33606",
+"Main Street 2106, LLC":"2106 W Main Street, Tampa, FL 33607",
+"Town 'n Country Plaza LLC":"7505-7605 W. Hillsborough Ave., Tampa, FL 33615",
+"Twelve Oaks Plaza LLP":"7004-7340 W. Waters Ave., Tampa, FL 33634",
+"Willow-Scher Investments LLC":"309, 311 South Willow Ave.; Unit 1,2,3, Tampa, FL 33606"
+};
+
+function populatePropertyDropdowns(){
+  const opts = Object.keys(propertyDirectory).sort((a,b)=>a.localeCompare(b));
+  [document.getElementById('property'), document.getElementById('moveProperty')].forEach(sel=>{
+    if(!sel) return;
+    sel.innerHTML='<option value="">Select Property</option>'+opts.map(name=>`<option value="${escHTML(name)}">${escHTML(name)}</option>`).join('');
+  });
+}
+function propertySelected(name){
+  const address = propertyDirectory[name] || '';
+  const pm = document.getElementById('property');
+  const move = document.getElementById('moveProperty');
+  if(pm && pm.value !== name) pm.value=name;
+  if(move && move.value !== name) move.value=name;
+  const a=document.getElementById('address'); if(a) a.value=address;
+  const ma=document.getElementById('moveAddress'); if(ma) ma.value=address;
+}
+
 const sections={
 plumbing:["Main drains / cleanouts","Leaks / water damage","Faucets / fixtures","Water heaters","Backflow preventer","Sump pump / drainage"],
 hvac:["HVAC units / operation","Filters / filter condition","Condensate drains / pans","Thermostats","Condenser / exterior units"],
@@ -330,6 +382,7 @@ document.getElementById("photos").appendChild(d);
 });
 
 document.getElementById("date").valueAsDate=new Date();
+populatePropertyDropdowns();
 
 // Tabbed inspection views: PM keeps the existing maintenance workflow; Move-Out shows the move-out checklist and photos.
 function showTab(tab){
@@ -390,11 +443,11 @@ async function buildReportHTML(withPhotos=true){
   const property=document.getElementById("property").value || document.getElementById("moveProperty").value || "Property";
   const date=document.getElementById("date").value || document.getElementById("moveDate").value || "";
   const tech=document.getElementById("tech").value || document.getElementById("moveConductedBy").value || "";
-  const address=document.getElementById("address").value || "";
+  const activeMoveOut=document.getElementById("tabMove")?.classList.contains("active");
+  const address=(activeMoveOut ? document.getElementById("moveAddress").value : document.getElementById("address").value) || "";
   let out=[];
   out.push("<!doctype html><html><head><meta charset='utf-8'><title>Property Inspection Report - "+escHTML(property)+"</title><style>body{font-family:Arial;margin:28px;color:#222}h1{color:#1f4e78}h2{background:#1f4e78;color:#fff;padding:8px;font-size:16px}h3{background:#e7edf3;padding:7px;font-size:14px}table{width:100%;border-collapse:collapse;margin-bottom:14px}th,td{border:1px solid #bbb;padding:6px;font-size:11px;vertical-align:top}th{background:#d9eaf7}p{font-size:12px}.photoBlock{page-break-inside:avoid;margin:12px 0}.photoBlock img{max-width:600px;max-height:500px;display:block;margin-top:5px;border:1px solid #aaa}</style></head><body>");
   out.push("<h1>Preventative Maintenance & Commercial Property Move-Out Inspection</h1><p><b>Property:</b> "+escHTML(property)+"<br><b>Address:</b> "+escHTML(address)+"<br><b>Date:</b> "+escHTML(date)+"<br><b>Technician / Inspector:</b> "+escHTML(tech)+"</p>");
-  const activeMoveOut=document.getElementById("tabMove")?.classList.contains("active");
   document.querySelectorAll(".card").forEach((card,index)=>{
     const heading=card.querySelector("h2"); if(!heading)return;
     const isMove=heading.innerText.includes("Commercial Property Move-Out Walkthrough");
