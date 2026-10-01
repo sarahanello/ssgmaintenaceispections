@@ -42,7 +42,11 @@ header{position:static;background:#fff;color:#000;padding:0 0 10px}
 input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 }
 
-.inspection-home{max-width:760px;margin:10px auto 30px}.home-card{background:#fff;border:1px solid #d8e0e8;border-radius:18px;padding:24px;box-shadow:0 8px 28px rgba(0,0,0,.08)}.home-icon{width:58px;height:58px;border-radius:16px;background:#0b3b66;color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:14px}.home-card h2{margin:0 0 6px;font-size:24px;color:#0b3b66}.home-card>p{margin:0 0 20px;color:#64748b}.inspection-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}.inspection-option{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid #d9e2ec;background:#f8fafc;border-radius:14px;padding:16px;cursor:pointer;color:#102a43;min-height:82px;transition:.15s}.inspection-option:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(0,0,0,.08)}.inspection-option>span{font-size:25px;width:34px;text-align:center}.inspection-option div{flex:1}.inspection-option b{display:block;font-size:15px}.inspection-option small{display:block;color:#64748b;margin-top:4px;line-height:1.3}.inspection-option strong{font-size:25px;color:#64748b}.back-row{margin:0 0 8px}@media(max-width:700px){.inspection-home{margin:0 auto 20px}.home-card{padding:18px;border-radius:14px}.home-card h2{font-size:21px}.inspection-options{grid-template-columns:1fr;gap:10px}.inspection-option{min-height:72px;padding:13px}}
+.inspection-home{max-width:760px;margin:10px auto 30px}.home-card{background:#fff;border:1px solid #d8e0e8;border-radius:18px;padding:24px;box-shadow:0 8px 28px rgba(0,0,0,.08)}.home-icon{width:58px;height:58px;border-radius:16px;background:#0b3b66;color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:14px}.home-card h2{margin:0 0 6px;font-size:24px;color:#0b3b66}.home-card>p{margin:0 0 20px;color:#64748b}.inspection-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}.inspection-option{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid #d9e2ec;background:#f8fafc;border-radius:14px;padding:16px;cursor:pointer;color:#102a43;min-height:82px;transition:.15s}.inspection-option:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(0,0,0,.08)}.inspection-option>span{font-size:25px;width:34px;text-align:center}.inspection-option div{flex:1}.inspection-option b{display:block;font-size:15px}.inspection-option small{display:block;color:#64748b;margin-top:4px;line-height:1.3}.inspection-option strong{font-size:25px;color:#64748b}.back-row{margin:0 0 8px}
+html.home-mode #inspectionHome{display:block !important}
+html.home-mode #inspectionApp{display:none !important}
+html.app-mode #inspectionHome{display:none !important}
+html.app-mode #inspectionApp{display:block !important}@media(max-width:700px){.inspection-home{margin:0 auto 20px}.home-card{padding:18px;border-radius:14px}.home-card h2{font-size:21px}.inspection-options{grid-template-columns:1fr;gap:10px}.inspection-option{min-height:72px;padding:13px}}
 </style>
 </head>
 <body>
@@ -389,10 +393,14 @@ populatePropertyDropdowns();
 
 // Tabbed inspection views: six inspection types with correctly scoped checklists and photos.
 function openInspection(tab){
+  document.documentElement.classList.remove('home-mode');
+  document.documentElement.classList.add('app-mode');
   showTab(tab);
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function goHome(){
+  document.documentElement.classList.remove('app-mode');
+  document.documentElement.classList.add('home-mode');
   document.getElementById("inspectionApp").style.display="none";
   document.getElementById("inspectionHome").style.display="block";
   document.querySelector("header h1").textContent="Tenant Inspection Property Inspection";
@@ -531,7 +539,10 @@ function newInspection(){
 if(confirm("Start a new inspection? Unsaved information will be cleared.")){
 localStorage.removeItem("maintenanceInspectionOriginal");location.reload();
 }}
-goHome();
+document.documentElement.classList.remove('app-mode');
+document.documentElement.classList.add('home-mode');
+document.getElementById('inspectionHome').style.display='block';
+document.getElementById('inspectionApp').style.display='none';
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
 </script>
 </body>
