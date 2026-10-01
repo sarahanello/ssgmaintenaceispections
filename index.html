@@ -67,10 +67,10 @@ input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 <section class="card">
 <h2>Property Information</h2>
 <div class="body grid">
-<div class="field"><label>Property Name</label><select id="property" onchange="propertySelected(this.value)"><option value="">Select Property</option></select></div>
+<div class="field"><label>Property Name <span class="req">*</span></label><select id="property" onchange="propertySelected(this.value)"><option value="">Select Property</option></select></div>
 <div class="field"><label>Inspection Date</label><input id="date" type="date"></div>
-<div class="field"><label>Property Address</label><input id="address" readonly placeholder="Automatically fills when property is selected"></div>
-<div class="field"><label>Technician / Conducted By</label><select id="tech"><option value="">Select Technician</option><option>Chris Howard</option><option>Philip Cyphers</option><option>Craig Cerny</option><option>Sarah Anello</option><option>Jarrod Bray</option><option>Lane Greenbank</option></select></div>
+<div class="field"><label>Property Address</label><input id="address" readonly placeholder="Automatically fills when property is selected"></div><div class="small" style="grid-column:1/-1">Select a property above. The address fills automatically.</div>
+<div class="field"><label>Technician / Conducted By</label><select id="tech" onchange="document.getElementById('moveConductedBy').value=this.value"><option value="">Select Technician</option><option>Chris Howard</option><option>Philip Cyphers</option><option>Craig Cerny</option><option>Sarah Anello</option><option>Jarrod Bray</option><option>Lane Greenbank</option></select></div>
 <div class="field"><label>Property Contact</label><input id="contact"></div>
 <div class="field"><label>Units Inspected</label><input id="units"></div>
 </div>
@@ -144,12 +144,12 @@ input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 <div class="body">
 <div class="small">Move-out checklist based on the Commercial Property Move-Out Walkthrough Checklist you provided. Complete the property/tenant details and document damage, excessive wear, missing items, cleaning, alterations, and recommended chargebacks.</div>
 <div class="grid" style="margin-top:10px">
-<div class="field"><label>Move-Out Property Name</label><select id="moveProperty" onchange="propertySelected(this.value)"><option value="">Select Property</option></select></div>
+<div class="field"><label>Property Name <span class="req">*</span></label><select id="moveProperty" onchange="propertySelected(this.value)"><option value="">Select Property</option></select></div>
 <div class="field"><label>Move-Out Property Address</label><input id="moveAddress" readonly placeholder="Automatically fills when property is selected"></div>
 <div class="field"><label>Suite #</label><input id="moveSuite"></div>
 <div class="field"><label>Tenant / Business Name</label><input id="moveTenant"></div>
 <div class="field"><label>Move-Out Walkthrough Date</label><input id="moveDate" type="date"></div>
-<div class="field"><label>Conducted By</label><select id="moveConductedBy"><option value="">Select Technician</option><option>Chris Howard</option><option>Philip Cyphers</option><option>Craig Cerny</option><option>Sarah Anello</option><option>Jarrod Bray</option><option>Lane Greenbank</option></select></div>
+<div class="field"><label>Conducted By</label><select id="moveConductedBy" onchange="document.getElementById('tech').value=this.value"><option value="">Select Technician</option><option>Chris Howard</option><option>Philip Cyphers</option><option>Craig Cerny</option><option>Sarah Anello</option><option>Jarrod Bray</option><option>Lane Greenbank</option></select></div>
 </div>
 <div id="moveOutChecklist" style="margin-top:12px"></div>
 <div class="field" style="margin-top:12px"><label>Final Comments / Recommended Chargebacks</label><textarea id="chargebacks" style="min-height:100px"></textarea></div>
@@ -189,6 +189,15 @@ input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 </div>
 
 <script>
+// App version 2026-10-01-1400: force refresh of older cached GitHub Pages versions.
+(async function(){
+  try {
+    const regs = await navigator.serviceWorker?.getRegistrations?.() || [];
+    for (const reg of regs) await reg.unregister();
+    if (window.caches) { const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k))); }
+  } catch(e) {}
+})();
+
 const propertyDirectory = {
 "46th Street Medical LLC":"14020 N 46th Street, Tampa, FL 33613-2813",
 "Altamonte / SSG Inc.":"1032-1098 Montgomery Road, Altamonte Springs, FL 32714",
@@ -203,11 +212,9 @@ const propertyDirectory = {
 "Fishhawk Storage LLC":"16617 Fishhawk Blvd., Lithia, FL 33547",
 "Florida Bearss Associates LLC":"202-238 E. Bearss Ave. (110 E Bearss o/p), Tampa, FL 33613",
 "Golding United Fishhawk LLC":"16707 - 16769 Fishhawk Blvd., Lithia, FL 33547",
-"Hamilton/Wenham, LLC":"15 Walnut Rd, South Hamilton, MA 01982",
 "Howard & A LLC":"202, 204, 206 N. Howard Ave.; 2303 West N. A. St., Tampa, FL 33606",
 "Howard & Main, LLC":"1702, 1704 N. Howard Ave., Tampa, FL 33607",
 "Interbay Commons LLC":"6301 - 6302 Interbay Commons Way, Tampa, FL 33611",
-"Intercont Wharf LLC":"801 Wharf St SW, Washington, DC 20024",
 "Lake St. Charles Medical Center LLC":"10522-10548 Lake St. Charles Blvd., Riverview, FL 33578",
 "Oakley Center LLC":"27814 Grove Isle Drive, Wesley Chapel, FL 33544",
 "Park Boulevard Shopping Center LTD":"7400-7700 49th Street N, Pinellas Park, FL 33781",
@@ -241,6 +248,11 @@ function propertySelected(name){
   const a=document.getElementById('address'); if(a) a.value=address;
   const ma=document.getElementById('moveAddress'); if(ma) ma.value=address;
 }
+
+// Keep both property selectors synchronized and fill both addresses.
+document.addEventListener('change', function(e){
+  if(e.target && (e.target.id === 'property' || e.target.id === 'moveProperty')) propertySelected(e.target.value);
+});
 
 const sections={
 plumbing:["Main drains / cleanouts","Leaks / water damage","Faucets / fixtures","Water heaters","Backflow preventer","Sump pump / drainage"],
