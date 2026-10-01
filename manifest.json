@@ -1,10 +1,9 @@
 {
-  "name": "Preventative Maintenance Inspection",
-  "short_name": "PM Inspection",
+  "name": "Tenant Inspection App",
+  "short_name": "Tenant Inspection",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f4f6f8",
   "theme_color": "#1f4e78",
-  "description": "Property preventative maintenance inspection app for maintenance technicians.",
   "icons": []
 }
