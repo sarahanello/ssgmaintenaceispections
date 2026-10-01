@@ -41,6 +41,8 @@ header{position:static;background:#fff;color:#000;padding:0 0 10px}
 .card{break-inside:avoid;border:1px solid #999}.card h2{background:#ddd;color:#000}
 input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 }
+
+.inspection-home{max-width:760px;margin:10px auto 30px}.home-card{background:#fff;border:1px solid #d8e0e8;border-radius:18px;padding:24px;box-shadow:0 8px 28px rgba(0,0,0,.08)}.home-icon{width:58px;height:58px;border-radius:16px;background:#0b3b66;color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:14px}.home-card h2{margin:0 0 6px;font-size:24px;color:#0b3b66}.home-card>p{margin:0 0 20px;color:#64748b}.inspection-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}.inspection-option{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid #d9e2ec;background:#f8fafc;border-radius:14px;padding:16px;cursor:pointer;color:#102a43;min-height:82px;transition:.15s}.inspection-option:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(0,0,0,.08)}.inspection-option>span{font-size:25px;width:34px;text-align:center}.inspection-option div{flex:1}.inspection-option b{display:block;font-size:15px}.inspection-option small{display:block;color:#64748b;margin-top:4px;line-height:1.3}.inspection-option strong{font-size:25px;color:#64748b}.back-row{margin:0 0 8px}@media(max-width:700px){.inspection-home{margin:0 auto 20px}.home-card{padding:18px;border-radius:14px}.home-card h2{font-size:21px}.inspection-options{grid-template-columns:1fr;gap:10px}.inspection-option{min-height:72px;padding:13px}}
 </style>
 </head>
 <body>
@@ -50,6 +52,23 @@ input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 </header>
 
 <div class="container">
+<section id="inspectionHome" class="inspection-home">
+  <div class="home-card">
+    <div class="home-icon">📋</div>
+    <h2>What inspection are you doing?</h2>
+    <p>Select an inspection below to get started.</p>
+    <div class="inspection-options">
+      <button class="inspection-option tenant-option" onclick="openInspection('tenant')"><span>🏢</span><div><b>Tenant Inspection</b><small>Tenant-occupied property inspection</small></div><strong>›</strong></button>
+      <button class="inspection-option move-option" onclick="openInspection('moveout')"><span>🚪</span><div><b>Move-Out Inspection</b><small>Tenant move-out walkthrough</small></div><strong>›</strong></button>
+      <button class="inspection-option vacant-option" onclick="openInspection('vacant')"><span>🏠</span><div><b>Vacant Unit Inspection</b><small>Vacant unit condition and turn</small></div><strong>›</strong></button>
+      <button class="inspection-option exterior-option" onclick="openInspection('exterior')"><span>🏬</span><div><b>Exterior Property Inspection</b><small>Building, parking, landscaping and site</small></div><strong>›</strong></button>
+      <button class="inspection-option roof-option" onclick="openInspection('roof')"><span>🏗️</span><div><b>Roof Inspection</b><small>Roof, drainage, flashing and leaks</small></div><strong>›</strong></button>
+      <button class="inspection-option hvac-option" onclick="openInspection('hvac')"><span>❄️</span><div><b>HVAC Inspection</b><small>HVAC equipment and condition</small></div><strong>›</strong></button>
+    </div>
+  </div>
+</section>
+<div id="inspectionApp" style="display:none">
+<div class="back-row no-print"><button class="secondary" onclick="goHome()">← Back to Inspection Selection</button></div>
 <div class="tabs no-print"><button id="tabTenant" class="tab active" onclick="showTab('tenant')">Tenant Inspection</button><button id="tabMove" class="tab" onclick="showTab('moveout')">Move-Out Inspection</button><button id="tabVacant" class="tab" onclick="showTab('vacant')">Vacant Unit Inspection</button><button id="tabExterior" class="tab" onclick="showTab('exterior')">Exterior Property Inspection</button><button id="tabRoof" class="tab" onclick="showTab('roof')">Roof Inspection</button><button id="tabHVAC" class="tab" onclick="showTab('hvac')">HVAC Inspection</button></div>
 <div class="toolbar no-print">
 <button onclick="saveData()">Save Inspection</button>
@@ -64,7 +83,7 @@ input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
   The <b>Download Word Report + Photos</b> button creates a Word-compatible report with the photos embedded inside the document. <b>Email Word Report + Photos</b> uses the phone share sheet when supported so the Word file can be attached directly to the email.
 </div>
 
-<section class="card">
+<section id="propertyInfoCard" class="card">
 <h2>Property Information</h2>
 <div class="body grid">
 <div class="field"><label>Property Name <span class="req">*</span></label><select id="property" onchange="propertySelected(this.value)"><option value="">Select Property</option></select></div>
@@ -136,7 +155,7 @@ input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 <section class="card" data-tab="tenant"><h2>5. Overall Property Assessment</h2><div class="body grid"><div class="field"><label>Overall Condition</label><select id="overall"><option></option><option>Good</option><option>Fair</option><option>Poor</option></select></div><div class="field"><label>Immediate Attention Required?</label><select id="immediate"><option></option><option>Yes</option><option>No</option></select></div><div class="field"><label>Active Leak / Water Intrusion?</label><select id="activeLeak"><option></option><option>Yes</option><option>No</option></select></div><div class="field"><label>Vendor Required?</label><select id="vendor2"><option></option><option>Yes</option><option>No</option></select></div><div class="field"><label>Work Orders Required?</label><select id="workorders"><option></option><option>Yes</option><option>No</option></select></div></div></section>
 
 
-<section class="card">
+<section id="notesCard" class="card">
 <h2>11. Technician Notes & Sign-Off</h2>
 <div class="body">
 <textarea id="notes" style="min-height:130px" placeholder="General observations, follow-up items, materials needed, vendor recommendations, etc."></textarea>
@@ -146,6 +165,7 @@ input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
 </div>
 </div>
 </section>
+</div>
 </div>
 
 <script>
@@ -368,11 +388,26 @@ document.getElementById("date").valueAsDate=new Date();
 populatePropertyDropdowns();
 
 // Tabbed inspection views: six inspection types with correctly scoped checklists and photos.
+function openInspection(tab){
+  showTab(tab);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function goHome(){
+  document.getElementById("inspectionApp").style.display="none";
+  document.getElementById("inspectionHome").style.display="block";
+  document.querySelector("header h1").textContent="Tenant Inspection Property Inspection";
+  document.querySelector("header p").textContent="Technician inspection app — choose the inspection you need to complete.";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
 function showTab(tab){
+  document.getElementById("inspectionHome").style.display="none";
+  document.getElementById("inspectionApp").style.display="block";
   const cards=[...document.querySelectorAll(".card")];
   cards.forEach(card=>{
-    const isPropertyInfo=card.querySelector("h2")?.innerText.includes("Property Information");
-    if(isPropertyInfo){card.style.display="";return;}
+    const isPropertyInfo=card.id==="propertyInfoCard";
+    const isNotes=card.id==="notesCard";
+    if(isPropertyInfo || isNotes){card.style.display="";return;}
     card.style.display=(card.dataset.tab===tab)?"":"none";
   });
   const ids=["Tenant","Move","Vacant","Exterior","Roof","HVAC"];
@@ -496,7 +531,7 @@ function newInspection(){
 if(confirm("Start a new inspection? Unsaved information will be cleared.")){
 localStorage.removeItem("maintenanceInspectionOriginal");location.reload();
 }}
-showTab("tenant");
+goHome();
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
 </script>
 </body>
