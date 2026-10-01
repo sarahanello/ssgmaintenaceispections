@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1f4e78">
+<link rel="manifest" href="manifest.json">
+<title>Tenant Inspection App</title>
+<style>
+:root{--blue:#1f4e78;--light:#d9eaf7;--bg:#f4f6f8;--border:#c8ced6;--green:#dff0d8;--yellow:#fff2cc;--red:#fce4d6}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#222}
+header{background:var(--blue);color:#fff;padding:18px 20px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:21px} header p{margin:5px 0 0;font-size:13px}
+.tabs{display:flex;gap:8px;margin:0 0 14px;position:sticky;top:78px;z-index:4;background:var(--bg);padding:8px 0;overflow-x:auto;scrollbar-width:thin}.tab{background:#fff;color:var(--blue);border:2px solid var(--blue);border-radius:7px;padding:11px 14px;white-space:nowrap;flex:0 0 auto}.tab.active{background:var(--blue);color:#fff}@media(max-width:700px){.tabs{top:76px}.tab{padding:10px 11px}}
+.container{max-width:1100px;margin:auto;padding:16px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+button{border:0;border-radius:6px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--blue);color:#fff}
+button.secondary{background:#687585}
+.card{background:#fff;border:1px solid var(--border);border-radius:8px;margin:12px 0;overflow:hidden}
+.card h2{font-size:16px;background:var(--blue);color:#fff;margin:0;padding:10px 12px}
+.body{padding:12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:4px}
+input,textarea,select{width:100%;padding:8px;border:1px solid var(--border);border-radius:5px;font:inherit}
+textarea{min-height:70px;resize:vertical}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{border:1px solid var(--border);padding:7px;vertical-align:middle}
+th{background:var(--light);text-align:left}
+.center{text-align:center}
+.status{font-size:12px;color:#555;margin-left:auto;align-self:center}
+.small{font-size:11px;color:#666}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.photo{border:1px dashed #aaa;padding:8px;border-radius:6px;min-height:80px}
+.photo img{max-width:100%;max-height:130px;display:block;margin-top:5px}
+.priority{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:700px){.grid,.photo-grid{grid-template-columns:1fr}table{font-size:11px}th,td{padding:5px}}
+@media print{
+body{background:#fff}.toolbar,.no-print{display:none!important}
+header{position:static;background:#fff;color:#000;padding:0 0 10px}
+.card{break-inside:avoid;border:1px solid #999}.card h2{background:#ddd;color:#000}
+input,textarea,select{border:0;padding:2px}.container{max-width:none;padding:0}
+}
+
+.inspection-home{max-width:760px;margin:10px auto 30px}.home-card{background:#fff;border:1px solid #d8e0e8;border-radius:18px;padding:24px;box-shadow:0 8px 28px rgba(0,0,0,.08)}.home-icon{width:58px;height:58px;border-radius:16px;background:#0b3b66;color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:14px}.home-card h2{margin:0 0 6px;font-size:24px;color:#0b3b66}.home-card>p{margin:0 0 20px;color:#64748b}.inspection-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}.inspection-option{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid #d9e2ec;background:#f8fafc;border-radius:14px;padding:16px;cursor:pointer;color:#102a43;min-height:82px;transition:.15s}.inspection-option:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(0,0,0,.08)}.inspection-option>span{font-size:25px;width:34px;text-align:center}.inspection-option div{flex:1}.inspection-option b{display:block;font-size:15px}.inspection-option small{display:block;color:#64748b;margin-top:4px;line-height:1.3}.inspection-option strong{font-size:25px;color:#64748b}.back-row{margin:0 0 8px}
+html.home-mode #inspectionHome{display:block !important}
+html.home-mode #inspectionApp{display:none !important}
+html.app-mode #inspectionHome{display:none !important}
+html.app-mode #inspectionApp{display:block !important}@media(max-width:700px){.inspection-home{margin:0 auto 20px}.home-card{padding:18px;border-radius:14px}.home-card h2{font-size:21px}.inspection-options{grid-template-columns:1fr;gap:10px}.inspection-option{min-height:72px;padding:13px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Tenant Inspection Property Inspection</h1>
+<p>Technician inspection app — complete the inspection, document deficiencies, and submit the report.</p>
+</header>
+
+<div class="container">
+<section id="inspectionHome" class="inspection-home">
+  <div class="home-card">
+    <div class="home-icon">📋</div>
+    <h2>What inspection are you doing?</h2>
+    <p>Select an inspection below to get started.</p>
+    <div class="inspection-options">
+      <button class="inspection-option tenant-option" onclick="openInspection('tenant')"><span>🏢</span><div><b>Tenant Inspection</b><small>Tenant-occupied property inspection</small></div><strong>›</strong></button>
+      <button class="inspection-option move-option" onclick="openInspection('moveout')"><span>🚪</span><div><b>Move-Out Inspection</b><small>Tenant move-out walkthrough</small></div><strong>›</strong></button>
+      <button class="inspection-option vacant-option" onclick="openInspection('vacant')"><span>🏠</span><div><b>Vacant Unit Inspection</b><small>Vacant unit condition and turn</small></div><strong>›</strong></button>
+      <button class="inspection-option exterior-option" onclick="openInspection('exterior')"><span>🏬</span><div><b>Exterior Property Inspection</b><small>Building, parking, landscaping and site</small></div><strong>›</strong></button>
+      <button class="inspection-option roof-option" onclick="openInspection('roof')"><span>🏗️</span><div><b>Roof Inspection</b><small>Roof, drainage, flashing and leaks</small></div><strong>›</strong></button>
+      <button class="inspection-option hvac-option" onclick="openInspection('hvac')"><span>❄️</span><div><b>HVAC Inspection</b><small>HVAC equipment and condition</small></div><strong>›</strong></button>
+    </div>
+  </div>
+</section>
+<div id="inspectionApp" style="display:none">
+<div class="back-row no-print"><button class="secondary" onclick="location.href='index.html'">← Back to Inspection Selection</button></div>
+<div class="tabs no-print"><button id="tabTenant" class="tab active" onclick="showTab('tenant')">Tenant Inspection</button><button id="tabMove" class="tab" onclick="showTab('moveout')">Move-Out Inspection</button><button id="tabVacant" class="tab" onclick="showTab('vacant')">Vacant Unit Inspection</button><button id="tabExterior" class="tab" onclick="showTab('exterior')">Exterior Property Inspection</button><button id="tabRoof" class="tab" onclick="showTab('roof')">Roof Inspection</button><button id="tabHVAC" class="tab" onclick="showTab('hvac')">HVAC Inspection</button></div>
+<div class="toolbar no-print">
+<button onclick="saveData()">Save Inspection</button>
+<button onclick="downloadWordReport()">Download Word Report + Photos</button>
+<button onclick="emailWordReport()">Email Word Report + Photos</button>
+<button onclick="window.print()">Print / Save PDF</button>
+<button class="secondary" onclick="newInspection()">New Inspection</button>
+<span class="status" id="status"></span>
+</div>
+<div class="body no-print small" style="padding-top:0">
+  <b>Phone use:</b> Open this app on the technician's phone and use <b>Add to Home Screen</b> to keep it like an app.
+  The <b>Download Word Report + Photos</b> button creates a Word-compatible report with the photos embedded inside the document. <b>Email Word Report + Photos</b> uses the phone share sheet when supported so the Word file can be attached directly to the email.
+</div>
+
+<section id="propertyInfoCard" class="card">
+<h2>Property Information</h2>
+<div class="body grid">
+<div class="field"><label>Property Name <span class="req">*</span></label><select id="property" onchange="propertySelected(this.value)"><option value="">Select Property</option></select></div>
+<div class="field"><label>Inspection Date</label><input id="date" type="date"></div>
+<div class="field"><label>Property Address</label><input id="address" readonly placeholder="Automatically fills when property is selected"></div><div class="small" style="grid-column:1/-1">Select a property above. The address fills automatically.</div>
+<div class="field"><label>Technician / Conducted By</label><select id="tech" onchange="document.getElementById('moveConductedBy').value=this.value"><option value="">Select Technician</option><option>Chris Howard</option><option>Philip Cyphers</option><option>Craig Cerny</option><option>Sarah Anello</option><option>Jarrod Bray</option><option>Lane Greenbank</option></select></div>
+<div class="field"><label>Property Contact</label><input id="contact"></div>
+<div class="field"><label>Units Inspected</label><input id="units"></div>
+</div>
+</section>
+
+<section class="card" data-tab="tenant">
+<h2>1. Grease Trap Inspection</h2>
+<div class="body">
+<div class="small">Condition: G = Good, F = Fair, P = Poor. Lid/Access: G = Good, D = Damaged.</div>
+<div style="overflow:auto;margin-top:8px"><table id="greaseTable"><thead><tr><th>Trap # / Location</th><th>Size</th><th>Condition</th><th>Leak</th><th>Odor</th><th>Drainage</th><th>Lid / Access</th><th>Last Known Service</th></tr></thead><tbody></tbody></table></div>
+<div class="toolbar no-print" style="margin-top:8px"><button onclick="addGreaseTrap()">+ Add Grease Trap</button></div>
+<div class="grid"><div class="field"><label>Grease Trap Notes</label><textarea id="greaseNotes"></textarea></div></div>
+</div></section>
+
+<section class="card" data-tab="tenant">
+<h2>2. Plumbing Inspection</h2><div class="body"><div id="plumbing"></div></div>
+</section>
+
+<section class="card" data-tab="tenant">
+<h2>3. Tenant Inspection Items Requiring Attention</h2>
+<div class="body"><div style="overflow:auto"><table id="issues"><thead><tr><th>#</th><th>Location / Unit</th><th>Issue / Deficiency</th><th>Priority</th><th>Recommended Action</th><th>WO #</th></tr></thead><tbody></tbody></table></div><div class="toolbar no-print" style="margin-top:8px"><button onclick="addIssue()">+ Add Issue</button></div><div class="small"><b>Urgent:</b> immediate attention &nbsp; <b>High:</b> address soon &nbsp; <b>Medium:</b> scheduled PM &nbsp; <b>Low:</b> monitor/minor</div></div>
+</section>
+
+<section class="card" data-tab="moveout">
+<h2>1. Commercial Property Move-Out Walkthrough</h2>
+<div class="body">
+<div class="small">Move-out checklist based on the Commercial Property Move-Out Walkthrough Checklist you provided. Complete the property/tenant details and document damage, excessive wear, missing items, cleaning, alterations, and recommended chargebacks.</div>
+<div class="grid" style="margin-top:10px">
+<div class="field"><label>Property Name <span class="req">*</span></label><select id="moveProperty" onchange="propertySelected(this.value)"><option value="">Select Property</option></select></div>
+<div class="field"><label>Move-Out Property Address</label><input id="moveAddress" readonly placeholder="Automatically fills when property is selected"></div>
+<div class="field"><label>Suite #</label><input id="moveSuite"></div><div class="field"><label>Tenant / Business Name</label><input id="moveTenant"></div>
+<div class="field"><label>Move-Out Walkthrough Date</label><input id="moveDate" type="date"></div>
+<div class="field"><label>Conducted By</label><select id="moveConductedBy"><option value="">Select Technician</option><option>Chris Howard</option><option>Philip Cyphers</option><option>Craig Cerny</option><option>Sarah Anello</option><option>Jarrod Bray</option><option>Lane Greenbank</option></select></div>
+</div><div id="moveOutChecklist" style="margin-top:12px"></div><div class="field" style="margin-top:12px"><label>Final Comments / Recommended Chargebacks</label><textarea id="chargebacks" style="min-height:100px"></textarea></div><div class="field" style="margin-top:12px"><label>Inspector Signature</label><input id="moveSignature"></div>
+</div></section>
+
+<section class="card" data-tab="vacant">
+<h2>1. Vacant Unit Inspection</h2><div class="body"><div class="field" style="max-width:300px"><label>Unit Number</label><input id="vacantUnit"></div><div id="vacant"></div><div style="margin-top:16px"><h3 style="margin:8px 0;background:#e7edf3;padding:8px;font-size:14px">Plumbing</h3><div id="vacantPlumbing"></div></div></div>
+</section>
+<section class="card" data-tab="vacant">
+<h2>2. Vacant Unit Turn</h2><div class="body"><div id="turn"></div></div>
+</section>
+
+<section class="card" data-tab="exterior">
+<h2>1. Exterior Property Inspection</h2><div class="body"><div class="small">Exterior, parking, trash, landscaping, lighting, security and signage items from the Property Inspection Report you provided.</div><div id="propertyInspection"></div></div>
+</section>
+
+<section class="card" data-tab="roof">
+<h2>1. Roof Inspection</h2><div class="body"><div id="roofInspection"></div><div class="field" style="margin-top:12px"><label>Roof Inspection Notes</label><textarea id="roofNotes"></textarea></div></div>
+</section>
+
+<section class="card" data-tab="hvac">
+<h2>1. HVAC Inspection</h2><div class="body"><div id="hvac"></div><div class="field" style="margin-top:12px"><label>HVAC Inspection Notes</label><textarea id="hvacNotes"></textarea></div></div>
+</section>
+
+
+<section class="card" data-tab="tenant" data-photo-card="tenant"><h2>4. Tenant Inspection Photos</h2><div class="body"><div class="small">Upload one or multiple photos for each tenant-inspection item. Photos stay grouped with the correct inspection section.</div><div class="photo-grid" id="photos-tenant"></div></div></section>
+<section class="card" data-tab="moveout" data-photo-card="moveout"><h2>2. Move-Out Inspection Photos</h2><div class="body"><div class="small">Upload multiple photos for each move-out area.</div><div class="photo-grid" id="photos-moveout"></div></div></section>
+<section class="card" data-tab="vacant" data-photo-card="vacant"><h2>3. Vacant Unit Inspection Photos</h2><div class="body"><div class="small">Upload multiple photos for the vacant unit inspection or turn.</div><div class="photo-grid" id="photos-vacant"></div></div></section>
+<section class="card" data-tab="exterior" data-photo-card="exterior"><h2>2. Exterior Property Inspection Photos</h2><div class="body"><div class="small">Upload multiple photos for building, parking, trash, landscaping, lighting, security and signage.</div><div class="photo-grid" id="photos-exterior"></div></div></section>
+<section class="card" data-tab="roof" data-photo-card="roof"><h2>2. Roof Inspection Photos</h2><div class="body"><div class="small">Upload multiple photos of roof surfaces, drainage, flashing, penetrations and any deficiencies.</div><div class="photo-grid" id="photos-roof"></div></div></section>
+<section class="card" data-tab="hvac" data-photo-card="hvac"><h2>2. HVAC Inspection Photos</h2><div class="body"><div class="small">Upload multiple photos of units, filters, condensate systems, thermostats and condensers.</div><div class="photo-grid" id="photos-hvac"></div></div></section>
+<section class="card" data-tab="tenant"><h2>5. Overall Property Assessment</h2><div class="body grid"><div class="field"><label>Overall Condition</label><select id="overall"><option></option><option>Good</option><option>Fair</option><option>Poor</option></select></div><div class="field"><label>Immediate Attention Required?</label><select id="immediate"><option></option><option>Yes</option><option>No</option></select></div><div class="field"><label>Active Leak / Water Intrusion?</label><select id="activeLeak"><option></option><option>Yes</option><option>No</option></select></div><div class="field"><label>Vendor Required?</label><select id="vendor2"><option></option><option>Yes</option><option>No</option></select></div><div class="field"><label>Work Orders Required?</label><select id="workorders"><option></option><option>Yes</option><option>No</option></select></div></div></section>
+
+
+<section id="notesCard" class="card">
+<h2>11. Technician Notes & Sign-Off</h2>
+<div class="body">
+<textarea id="notes" style="min-height:130px" placeholder="General observations, follow-up items, materials needed, vendor recommendations, etc."></textarea>
+<div class="grid" style="margin-top:10px">
+<div class="field"><label>Technician Name / Signature</label><input id="signature"></div>
+<div class="field"><label>Manager / PM Review</label><input id="manager"></div>
+</div>
+</div>
+</section>
+</div>
+</div>
+
+<script>
+// App version 2026-10-01-1415: shared Property Information header remains at the top of every inspection tab.
+(async function(){
+  try {
+    const regs = await navigator.serviceWorker?.getRegistrations?.() || [];
+    for (const reg of regs) await reg.unregister();
+    if (window.caches) { const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k))); }
+  } catch(e) {}
+})();
+
+const propertyDirectory = {
+"46th Street Medical LLC":"14020 N 46th Street, Tampa, FL 33613-2813",
+"Altamonte / SSG Inc.":"1032-1098 Montgomery Road, Altamonte Springs, FL 32714",
+"Big Bend Medical Park LLC - Association":"13123-13145 Kings Lake Drive, Gibsonton, FL 33534",
+"Big Bend Medical Park, LLC - Operating":"13145 Kings Lake Drive, 6-101, 6-102, Gibsonton, FL 33534",
+"Brandon Mall General Partnership":"903-1101 W. Brandon Blvd., Brandon, FL 33511",
+"Bruce B. Downs Professional Center Condominium Association":"12206 Bruce B. Downs Blvd, Tampa, FL 33612",
+"Bruce B. Downs Professional Center LLC":"12210 Bruce B. Downs Blvd, Tampa, FL 33612",
+"Clearwater Storage LLC":"1861 N Highland Ave., Clearwater, FL 33755",
+"Fishhawk Office Park LLC - Operating":"16627-16641 Fishhawk Blvd., Lithia, FL 33547",
+"Fishhawk Professional Center Owner's Association, Inc.":"5454-5486 Lithia Pinecrest Road, Lithia, FL 33547",
+"Fishhawk Storage LLC":"16617 Fishhawk Blvd., Lithia, FL 33547",
+"Florida Bearss Associates LLC":"202-238 E. Bearss Ave. (110 E Bearss o/p), Tampa, FL 33613",
+"Golding United Fishhawk LLC":"16707 - 16769 Fishhawk Blvd., Lithia, FL 33547",
+"Howard & A LLC":"202, 204, 206 N. Howard Ave.; 2303 West N. A. St., Tampa, FL 33606",
+"Howard & Main, LLC":"1702, 1704 N. Howard Ave., Tampa, FL 33607",
+"Interbay Commons LLC":"6301 - 6302 Interbay Commons Way, Tampa, FL 33611",
+"Lake St. Charles Medical Center LLC":"10522-10548 Lake St. Charles Blvd., Riverview, FL 33578",
+"Oakley Center LLC":"27814 Grove Isle Drive, Wesley Chapel, FL 33544",
+"Park Boulevard Shopping Center LTD":"7400-7700 49th Street N, Pinellas Park, FL 33781",
+"RSVP Fishhawk LLC - Operating":"5454-5486 Lithia Pinecrest Road, Lithia, FL 33547",
+"RSVP Hyde Park LLC":"2111 W Swann Ave., Tampa, FL 33606",
+"Scher Investments, LLC":"204 N Howard Ave, Tampa, FL 33606",
+"Shoppes at 54 LLC":"7643-7657 SR 54 (54 & Cita Lane), New Port Richey, FL 34653-6217",
+"Shoppes at Osprey Fishhawk LLC":"15258-15282 Fishhawk Blvd, Lithia, FL 33547",
+"Skipper 42 LLC":"14530 N 42nd Street, Tampa, FL 33613-2813",
+"Sunset Square General Partnership":"1861-1895 N. Highland Ave.; 1521-1527 Sunset Point Road, Clearwater, FL 33755",
+"Superior Lodge LLC":"204 N Howard Ave., Tampa, FL 33606",
+"Main Street 2106, LLC":"2106 W Main Street, Tampa, FL 33607",
+"Town 'n Country Plaza LLC":"7505-7605 W. Hillsborough Ave., Tampa, FL 33615",
+"Twelve Oaks Plaza LLP":"7004-7340 W. Waters Ave., Tampa, FL 33634",
+"Willow-Scher Investments LLC":"309, 311 South Willow Ave.; Unit 1,2,3, Tampa, FL 33606"
+};
+
+function populatePropertyDropdowns(){
+  const opts = Object.keys(propertyDirectory).sort((a,b)=>a.localeCompare(b));
+  [document.getElementById('property'), document.getElementById('moveProperty')].forEach(sel=>{
+    if(!sel) return;
+    sel.innerHTML='<option value="">Select Property</option>'+opts.map(name=>`<option value="${escHTML(name)}">${escHTML(name)}</option>`).join('');
+  });
+}
+function propertySelected(name){
+  const address = propertyDirectory[name] || '';
+  const pm = document.getElementById('property');
+  const move = document.getElementById('moveProperty');
+  if(pm && pm.value !== name) pm.value=name;
+  if(move && move.value !== name) move.value=name;
+  const a=document.getElementById('address'); if(a) a.value=address;
+  const ma=document.getElementById('moveAddress'); if(ma) ma.value=address;
+}
+
+// Keep both property selectors synchronized and fill both addresses.
+document.addEventListener('change', function(e){
+  if(e.target && (e.target.id === 'property' || e.target.id === 'moveProperty')) propertySelected(e.target.value);
+});
+
+const sections={
+plumbing:["Main drains / cleanouts","Leaks / water damage","Faucets / fixtures","Water heaters","Backflow preventer","Sump pump / drainage"],
+hvac:["HVAC units / operation","Filters / filter condition","Condensate drains / pans","Thermostats","Condenser / exterior units"],
+vacant:["Unit condition / overall appearance","Ceilings / water stains","Walls / paint / damage","Flooring","Doors / locks / hardware","Windows / glass / screens","Kitchen / cabinets / counters","Restroom / bathroom condition","Appliances","Lighting / outlets","HVAC operation","Smoke / CO detectors if present","Signs of pests / moisture"],
+vacantPlumbing:["Main drains / cleanouts","Leaks / water damage","Faucets / fixtures","Water heaters","Backflow preventer","Sump pump / drainage"],
+turn:["Unit cleaned / ready","Touch-up paint needed","Repairs needed before occupancy","Keys / locks / access","Utilities / HVAC operational","Final condition photos taken"],
+roof:["Roof surface / membrane","Flashing / penetrations","Roof drains / scuppers","Gutters / downspouts","Signs of leaks / water intrusion","Roof curbs / equipment penetrations","Visible damage / loose materials","Roof access / safety concerns"]
+};
+
+const propertyGroups={
+"BUILDING & EXTERIOR":[
+"Building","Fascia","Store fronts","Canopy & ceiling","Canopy access","Walls","Windows","Doors","Cracks & joints",
+"Gutters & downspouts","Electric panels","Handrails, etc."
+],
+"PARKING LOT":[
+"Parking lot","Seal / pavement condition","Potholes","Striping","Arrows & car stops","Fire lanes","Handicap spaces","Grates","Bollards",
+"Sweeping / trash","Parking lot overall","Planters","Trash containers","Sidewalk","Rear center"
+],
+"TRASH / DUMPSTER AREA":[
+"Dumpsters","Percentage full","Size","Odor","Trash bags","Repair needed","Dump day"
+],
+"LANDSCAPING":[
+"Landscaping","Mowing / edging","Trimming","Dead landscaping","Weed control","Tree trimming","Pest control - grass","Palms",
+"Pest control - shrubs","Fertilizing","Mulch"
+],
+"LIGHTING / SECURITY / SIGNAGE":[
+"Lighting","Parking lot lighting","Canopy & fascia lighting","Security","Interior lighting","Exterior sign lighting","Lit signs","Pylon",
+"Tenant signage","Illegal signs","Installed signs","STOP signs","Handicap signs","Fire lane signs","No bike or skateboard signs","Leasing"
+]
+};
+
+
+const moveOutSections = [
+  {title:"Interior Condition Overview", items:[
+    "Walls & Paint — Acceptable / Damage or Excessive Marks",
+    "Flooring — Acceptable / Stained / Torn / Removed",
+    "Ceilings — Acceptable / Holes / Stained / Tiles Missing",
+    "Interior Doors — Acceptable / Damaged / Missing Hardware",
+    "Windows/Glass — Acceptable / Cracked / Broken / Tinted",
+    "Window Coverings — Acceptable / Missing / Damaged",
+    "Light Fixtures — Acceptable / Broken",
+    "Wall-Mounted Fixtures (TVs, signage, racks) — Fully Removed & Patched / Damaged or Unpatched",
+    "Nonstandard Installations — Acceptable / Damage",
+    "Trash or Debris Left Behind — No / Yes — Describe"
+  ]},
+  {title:"Restrooms", items:[
+    "Fixtures Removed or Damaged — No / Yes",
+    "Walls/Floors — Acceptable / Holes / Damage",
+    "Trash or Cleaning Required — No / Yes",
+    "Water Status — On / Off"
+  ]},
+  {title:"Break Room / Kitchen (if applicable)", items:[
+    "Sink/Countertops — Acceptable / Damage / Heavy Wear",
+    "Appliances Removed — N/A / Fully Removed / Items Left Behind",
+    "Grease or Food Debris Present — No / Yes"
+  ]},
+  {title:"Storage / Back of House", items:[
+    "Shelving/Fixtures — Removed / Damage From Removal",
+    "Trash/Items Left Behind — No / Yes",
+    "Rear Door & Surrounding Area — Acceptable / Damage"
+  ]},
+  {title:"Electrical", items:[
+    "Electrical Panel Condition — Acceptable / Damage",
+    "Electrical Panel Schedule — Complete / Missing",
+    "Electrical Panel Breakers — Acceptable / Missing – Open Spaces",
+    "Electrical Disconnect — Acceptable / Damage"
+  ]},
+  {title:"Modifications or Alterations Made By Tenant", items:[
+    "Signage — Removed? Yes / No — Notes on Condition After Removal",
+    "Security Systems — Removed? Yes / No — Notes on Condition After Removal",
+    "Partition Walls — Removed? Yes / No — Notes on Condition After Removal",
+    "Electrical/Lighting Mods — Removed? Yes / No — Notes on Condition After Removal",
+    "Other — Removed? Yes / No — Notes on Condition After Removal"
+  ]}
+];
+
+function moveOutHTML(){
+  return moveOutSections.map((sec,si)=>`<div style="margin-bottom:16px"><h3 style="margin:8px 0;background:#e7edf3;padding:8px;font-size:14px">${sec.title}</h3><table><thead><tr><th>Area / Item</th><th>Condition / Status</th><th>Notes / Damage</th></tr></thead><tbody>${sec.items.map((item,i)=>`<tr><td>${item}</td><td><select data-key="moveout_${si}_${i}_status"><option></option><option>Acceptable</option><option>Damage</option><option>Yes</option><option>No</option><option>N/A</option><option>Fully Removed</option><option>Items Left Behind</option><option>Complete</option><option>Missing</option><option>On</option><option>Off</option></select></td><td><input data-key="moveout_${si}_${i}_note" placeholder="Describe damage, wear, removal condition, or chargeback detail"></td></tr>`).join("")}</tbody></table></div>`).join("");
+}
+
+
+function checklistHTML(items,prefix){
+return `<table><thead><tr><th>Item</th><th>Good</th><th>Fair</th><th>Poor</th><th>N/A</th><th>Notes / Location</th></tr></thead><tbody>`+
+items.map((x,i)=>`<tr><td>${x}</td>${["Good","Fair","Poor","N/A"].map(v=>`<td class="center"><input type="radio" name="${prefix}${i}" value="${v}"></td>`).join("")}<td><input data-key="${prefix}${i}_note"></td></tr>`).join("")+
+`</tbody></table>`;
+}
+
+document.getElementById("plumbing").innerHTML=checklistHTML(sections.plumbing,"plumb");
+document.getElementById("hvac").innerHTML=checklistHTML(sections.hvac,"hvac");
+document.getElementById("roofInspection").innerHTML=checklistHTML(sections.roof,"roof");
+document.getElementById("vacant").innerHTML=checklistHTML(sections.vacant,"vac");
+document.getElementById("vacantPlumbing").innerHTML=checklistHTML(sections.vacantPlumbing,"vacplumb");
+document.getElementById("turn").innerHTML=checklistHTML(sections.turn,"turn");
+
+let pg=0;
+for(const [group,items] of Object.entries(propertyGroups)){
+const wrap=document.createElement("div");
+wrap.style.marginBottom="16px";
+wrap.innerHTML=`<h3 style="margin:8px 0;background:#e7edf3;padding:8px;font-size:14px">${group}</h3>`+
+checklistHTML(items,"property"+pg+"_");
+document.getElementById("propertyInspection").appendChild(wrap);
+pg++;
+}
+document.getElementById("moveOutChecklist").innerHTML=moveOutHTML();
+document.getElementById("moveDate").valueAsDate=new Date();
+
+function addGreaseTrap(data={}){
+const tr=document.createElement("tr");
+tr.innerHTML=`
+<td><input value="${data.loc||""}" placeholder="Trap # / location"></td>
+<td><input value="${data.size||""}"></td>
+<td><select><option></option><option>G - Good</option><option>F - Fair</option><option>P - Poor</option></select></td>
+<td class="center"><input type="checkbox"></td>
+<td class="center"><input type="checkbox"></td>
+<td class="center"><input type="checkbox"></td>
+<td><select><option></option><option>G - Good</option><option>D - Damaged</option></select></td>
+<td><input type="date" aria-label="Last Known Service"></td>`;
+document.querySelector("#greaseTable tbody").appendChild(tr);
+}
+for(let i=0;i<5;i++)addGreaseTrap();
+
+function addIssue(data={}){
+const tbody=document.querySelector("#issues tbody"),n=tbody.rows.length+1,tr=tbody.insertRow();
+tr.innerHTML=`<td>${n}</td><td><input value="${data.loc||""}"></td><td><input value="${data.issue||""}"></td>
+<td><select><option></option><option>Urgent</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><input value="${data.action||""}"></td><td><input value="${data.wo||""}"></td>`;
+}
+for(let i=0;i<5;i++)addIssue();
+
+const photoSets={
+ tenant:["Grease Trap","Plumbing","Tenant Deficiency / Repair"],
+ moveout:["Interior Condition","Restroom","Break Room / Kitchen","Storage / Back of House","Electrical","Tenant Modifications"],
+ vacant:["Vacant Unit Overall","Interior / Finishes","Vacant Unit Plumbing","Vacant Unit Turn / Repairs"],
+ exterior:["Building / Exterior","Parking Lot","Trash / Dumpster","Landscaping","Lighting / Security / Signage"],
+ roof:["Roof Surface","Flashing / Penetrations","Drains / Gutters","Leak / Water Intrusion","Roof Deficiency"],
+ hvac:["HVAC Unit","Filter","Condensate / Drain Pan","Thermostat","Condenser / Exterior Unit","HVAC Deficiency"]
+};
+Object.entries(photoSets).forEach(([tab,labels])=>{
+ const host=document.getElementById("photos-"+tab); if(!host)return;
+ labels.forEach(label=>{
+  const d=document.createElement("div");d.className="photo";
+  d.innerHTML=`<b>${label}</b><input type="file" accept="image/*" capture="environment" multiple><div class="preview"></div>`;
+  d.querySelector("input").addEventListener("change",e=>{
+   const p=d.querySelector(".preview");p.innerHTML="";
+   [...e.target.files].forEach(f=>{const img=document.createElement("img");img.src=URL.createObjectURL(f);p.appendChild(img)});
+  });
+  host.appendChild(d);
+ });
+});
+
+document.getElementById("date").valueAsDate=new Date();
+populatePropertyDropdowns();
+
+// Tabbed inspection views: six inspection types with correctly scoped checklists and photos.
+function openInspection(tab){
+  document.documentElement.classList.remove('home-mode');
+  document.documentElement.classList.add('app-mode');
+  showTab(tab);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function goHome(){
+  document.documentElement.classList.remove('app-mode');
+  document.documentElement.classList.add('home-mode');
+  document.getElementById("inspectionApp").style.display="none";
+  document.getElementById("inspectionHome").style.display="block";
+  document.querySelector("header h1").textContent="Tenant Inspection Property Inspection";
+  document.querySelector("header p").textContent="Technician inspection app — choose the inspection you need to complete.";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function showTab(tab){
+  document.getElementById("inspectionHome").style.display="none";
+  document.getElementById("inspectionApp").style.display="block";
+  const cards=[...document.querySelectorAll(".card")];
+  cards.forEach(card=>{
+    const isPropertyInfo=card.id==="propertyInfoCard";
+    const isNotes=card.id==="notesCard";
+    if(isPropertyInfo || isNotes){card.style.display="";return;}
+    card.style.display=(card.dataset.tab===tab)?"":"none";
+  });
+  const ids=["Tenant","Move","Vacant","Exterior","Roof","HVAC"];
+  const map={tenant:"Tenant",moveout:"Move",vacant:"Vacant",exterior:"Exterior",roof:"Roof",hvac:"HVAC"};
+  ids.forEach(id=>{const el=document.getElementById("tab"+id);if(el)el.classList.toggle("active",map[tab]===id);});
+  const titles={
+    tenant:["Tenant Inspection","Inspect tenant-occupied areas, plumbing, grease traps and deficiencies."],
+    moveout:["Move-Out Inspection","Complete the tenant move-out walkthrough and document conditions, damage and chargebacks."],
+    vacant:["Vacant Unit Inspection","Inspect vacant units, plumbing, condition and turn requirements."],
+    exterior:["Exterior Property Inspection","Inspect building exterior, parking, trash, landscaping, lighting, security and signage."],
+    roof:["Roof Inspection","Inspect roof surfaces, drainage, flashing, penetrations, leaks and visible deficiencies."],
+    hvac:["HVAC Inspection","Inspect HVAC operation, filters, condensate systems, thermostats and condensers."]
+  };
+  document.querySelector("header h1").textContent=titles[tab][0];
+  document.querySelector("header p").textContent=titles[tab][1];
+  window.currentInspectionTab=tab;
+  const first=document.querySelector('.card[data-tab="'+tab+'"]');
+  if(first) first.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function escHTML(s){
+return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+
+async function fileToDataURL(file){
+  return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});
+}
+
+async function getPhotoData(tab=window.currentInspectionTab||"tenant"){
+  const result=[];
+  const card=document.querySelector(`.card[data-photo-card="${tab}"]`);
+  if(!card)return result;
+  for(const d of card.querySelectorAll(".photo")){
+    const label=d.querySelector("b")?.innerText||"Photo";
+    const input=d.querySelector("input[type=file]");
+    if(input && input.files && input.files.length){
+      for(const file of input.files) result.push({label,name:file.name,data:await fileToDataURL(file)});
+    }
+  }
+  return result;
+}
+
+function cloneCardHTML(card, includePhotos=false){
+  const clone=card.querySelector(".body")?.cloneNode(true);
+  if(!clone)return "";
+  clone.querySelectorAll("input").forEach(el=>{
+    if(el.type==="file"){el.remove();return;}
+    if(el.type==="radio" || el.type==="checkbox"){
+      el.replaceWith(document.createTextNode(el.checked ? "☑" : "☐"));
+    } else {
+      const span=document.createElement("span");span.textContent=el.value||"";el.replaceWith(span);
+    }
+  });
+  clone.querySelectorAll("select").forEach(el=>{const span=document.createElement("span");span.textContent=el.value||"";el.replaceWith(span);});
+  clone.querySelectorAll("textarea").forEach(el=>{const span=document.createElement("span");span.textContent=el.value||"";el.replaceWith(span);});
+  clone.querySelectorAll("button").forEach(el=>el.remove());
+  if(!includePhotos) clone.querySelectorAll(".photo img").forEach(img=>img.remove());
+  return clone.innerHTML;
+}
+
+async function buildReportHTML(withPhotos=true){
+  const tab=window.currentInspectionTab||"tenant";
+  const property=document.getElementById("property").value || document.getElementById("moveProperty").value || "Property";
+  const date=document.getElementById("date").value || document.getElementById("moveDate").value || "";
+  const tech=document.getElementById("tech").value || document.getElementById("moveConductedBy").value || "";
+  const address=document.getElementById("address").value || document.getElementById("moveAddress").value || "";
+  const title={tenant:"Tenant Inspection",moveout:"Move-Out Inspection",vacant:"Vacant Unit Inspection",exterior:"Exterior Property Inspection",roof:"Roof Inspection",hvac:"HVAC Inspection"}[tab]||"Property Inspection";
+  let out=[];
+  out.push("<!doctype html><html><head><meta charset='utf-8'><title>"+escHTML(title)+" - "+escHTML(property)+"</title><style>body{font-family:Arial;margin:28px;color:#222}h1{color:#1f4e78}h2{background:#1f4e78;color:#fff;padding:8px;font-size:16px}h3{background:#e7edf3;padding:7px;font-size:14px}table{width:100%;border-collapse:collapse;margin-bottom:14px}th,td{border:1px solid #bbb;padding:6px;font-size:11px;vertical-align:top}th{background:#d9eaf7}p{font-size:12px}.photoBlock{page-break-inside:avoid;margin:12px 0}.photoBlock img{max-width:600px;max-height:500px;display:block;margin-top:5px;border:1px solid #aaa}</style></head><body>");
+  out.push("<h1>"+escHTML(title)+"</h1><p><b>Property:</b> "+escHTML(property)+"<br><b>Address:</b> "+escHTML(address)+"<br><b>Date:</b> "+escHTML(date)+"<br><b>Technician / Inspector:</b> "+escHTML(tech)+"</p>");
+  document.querySelectorAll(`.card[data-tab="${tab}"]`).forEach(card=>{const heading=card.querySelector("h2");if(!heading)return;out.push("<h2>"+escHTML(heading.innerText)+"</h2>");out.push(cloneCardHTML(card,false));});
+  if(withPhotos){
+    const photos=await getPhotoData(tab);out.push("<h2>Photos</h2>");
+    if(!photos.length)out.push("<p>No photos were attached.</p>");
+    for(const p of photos)out.push(`<div class="photoBlock"><b>${escHTML(p.label)}</b><br><img src="${p.data}" alt="${escHTML(p.label)}"><div>${escHTML(p.name)}</div></div>`);
+  }
+  out.push("<p><b>Prepared for:</b> Sarah@ssgcommercial.com</p></body></html>");
+  return {property,date,html:out.join("")};
+}
+
+async function downloadWordReport(){
+  const report=await buildReportHTML(true);
+  const safe=(report.property||"Property").replace(/[^a-z0-9]+/gi,"_");
+  const blob=new Blob([report.html],{type:"application/msword"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=safe+"_Inspection_Report_With_Photos.doc";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  document.getElementById("status").textContent="Word report with embedded photos downloaded.";
+}
+
+async function emailWordReport(){
+  const report=await buildReportHTML(true);
+  const safe=(report.property||"Property").replace(/[^a-z0-9]+/gi,"_");
+  const blob=new Blob([report.html],{type:"application/msword"});
+  const file=new File([blob],safe+"_Inspection_Report_With_Photos.doc",{type:"application/msword"});
+  const subject=`Completed Property Inspection - ${report.property}`;
+  const text=`Completed inspection for ${report.property}. The Word report includes the inspection details and embedded photos.`;
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:subject,text});document.getElementById("status").textContent="Share sheet opened with the Word report attached.";return;}catch(e){if(e.name==="AbortError")return;}
+  }
+  // Fallback for browsers that cannot attach files through Web Share.
+  await downloadWordReport();
+  window.location.href=`mailto:Sarah@ssgcommercial.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text+"\n\nThe Word report was downloaded to the device. Attach the downloaded .doc file to this email.")}`;
+  document.getElementById("status").textContent="Report downloaded and email opened; attach the Word file if your browser does not support file sharing.";
+}
+
+// Backward-compatible report button: now downloads a Word-compatible report with photos.
+async function downloadReport(){await downloadWordReport();}
+async function emailReport(){await emailWordReport();}
+
+function saveData(){
+const data={};
+document.querySelectorAll("input,select,textarea").forEach((el,i)=>{
+if(el.type==="file")return;
+if(el.type==="radio"){if(el.checked)data["radio"+i]=el.value}
+else if(el.type==="checkbox")data["check"+i]=el.checked;
+else data["field"+i]=el.value;
+});
+localStorage.setItem("maintenanceInspectionOriginal",JSON.stringify(data));
+document.getElementById("status").textContent="Saved on this device.";
+}
+function newInspection(){
+if(confirm("Start a new inspection? Unsaved information will be cleared.")){
+localStorage.removeItem("maintenanceInspectionOriginal");location.reload();
+}}
+document.documentElement.classList.remove('app-mode');
+document.documentElement.classList.add('home-mode');
+document.getElementById('inspectionHome').style.display='block';
+document.getElementById('inspectionApp').style.display='none';
+
+// Direct inspection page mode: inspection.html?type=tenant|moveout|vacant|exterior|roof|hvac
+const requestedInspection=new URLSearchParams(location.search).get('type');
+const validInspections=['tenant','moveout','vacant','exterior','roof','hvac'];
+if(validInspections.includes(requestedInspection)){ openInspection(requestedInspection); }
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 {
-  "name": "Tenant Inspection App",
-  "short_name": "Tenant Inspection",
+  "name": "Property Inspection",
+  "short_name": "Inspection",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f4f6f8",
